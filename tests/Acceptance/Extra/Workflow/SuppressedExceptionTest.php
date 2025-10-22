@@ -32,9 +32,13 @@ final class SuppressedExceptionTest extends TestCase
             WorkflowOptions::new()
                 ->withTaskQueue($feature->taskQueue)
                 ->withWorkflowRunTimeout(CarbonInterval::minute(2))
+                ->withEagerStart()
         );
 
         $client->start($stub);
+
+
+        dump($feature->taskQueue);
 
         $executedChildWorkflow = false;
         $deadline              = \microtime(true) + 5.0; // 5-second timeout
