@@ -5,12 +5,12 @@ declare(strict_types = 1);
 namespace Temporal\Tests\Acceptance\Extra\Workflow\SuppressedExceptionTest;
 
 
-use Carbon\CarbonInterval;
 use PHPUnit\Framework\Attributes\Test;
 use React\Promise\PromiseInterface;
-use Temporal\Client\WorkflowClientInterface;
-use Temporal\Client\WorkflowOptions;
+use Temporal\Client\WorkflowStubInterface;
 use Temporal\Interceptor\WorkflowOutboundRequestInterceptor;
+use Temporal\Tests\Acceptance\App\Attribute\Client;
+use Temporal\Tests\Acceptance\App\Attribute\Stub;
 use Temporal\Tests\Acceptance\App\TestCase;
 use Temporal\Worker\Transport\Command\RequestInterface;
 use Temporal\Workflow;
@@ -18,41 +18,25 @@ use Temporal\Workflow\ChildWorkflowOptions;
 use Temporal\Workflow\QueryMethod;
 use Temporal\Workflow\WorkflowInterface;
 use Temporal\Workflow\WorkflowMethod;
-use Temporal\Tests\Acceptance\App\Runtime\Feature;
 
 final class SuppressedExceptionTest extends TestCase
 {
     #[Test]
     public function childWorkflowStuck(
-        WorkflowClientInterface $client,
-        Feature $feature,
+        #[Stub('Root_Suppressed_Exception_Workflow')]
+        #[Client(timeout: 10)]
+        WorkflowStubInterface $stub,
     ) {
-        $stub = $client->newUntypedWorkflowStub(
-            'Root_Suppressed_Exception_Workflow',
-            WorkflowOptions::new()
-                ->withTaskQueue($feature->taskQueue)
-                ->withWorkflowRunTimeout(CarbonInterval::minute(2))
-                ->withEagerStart()
-        );
-
-        $client->start($stub);
-
-
-        dump($feature->taskQueue);
-
         $executedChildWorkflow = false;
         $deadline              = \microtime(true) + 5.0; // 5-second timeout
         do {
-            try {
-                $executedChildWorkflow = $stub->query('isExecutedChildWorkflow')->getValue(0);
-            }catch (\Throwable $t){
-                dump($t);
-            }
+            $executedChildWorkflow = $stub->query('isExecutedChildWorkflow')->getValue(0);
 
             if ($executedChildWorkflow) {
                 break;
             }
         } while (\microtime(true) < $deadline);
+
 
         $this->assertTrue($executedChildWorkflow, 'Child_Suppressed_Exception_Workflow is stuck');
     }
