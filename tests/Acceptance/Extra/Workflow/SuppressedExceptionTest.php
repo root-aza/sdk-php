@@ -18,12 +18,14 @@ use Temporal\Workflow\QueryMethod;
 use Temporal\Workflow\ReturnType;
 use Temporal\Workflow\WorkflowInterface;
 use Temporal\Workflow\WorkflowMethod;
+use Temporal\Tests\Acceptance\App\Runtime\Feature;
 
 final class SuppressedExceptionTest extends TestCase
 {
     #[Test]
-    public function childWorkflow(
+    public function childWorkflowStuck(
         #[Stub('Root_Suppressed_Exception_Workflow')] WorkflowStubInterface $stub,
+        Feature $feature,
     ) {
         $executedChildWorkflow = false;
         $deadline              = \microtime(true) + 5.0; // 5-second timeout
