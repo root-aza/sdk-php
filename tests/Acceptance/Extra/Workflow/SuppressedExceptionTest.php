@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Temporal\Tests\Acceptance\Extra\Workflow\SuppressedExceptionTest;
 
 
+use Carbon\CarbonInterval;
 use PHPUnit\Framework\Attributes\Test;
 use React\Promise\PromiseInterface;
 use Temporal\Client\WorkflowClientInterface;
@@ -30,6 +31,7 @@ final class SuppressedExceptionTest extends TestCase
             'Root_Suppressed_Exception_Workflow',
             WorkflowOptions::new()
                 ->withTaskQueue($feature->taskQueue)
+                ->withWorkflowRunTimeout(CarbonInterval::minute(2))
         );
 
         $client->start($stub);
