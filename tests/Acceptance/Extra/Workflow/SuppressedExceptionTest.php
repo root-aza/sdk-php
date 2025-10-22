@@ -7,10 +7,10 @@ namespace Temporal\Tests\Acceptance\Extra\Workflow\SuppressedExceptionTest;
 
 use PHPUnit\Framework\Attributes\Test;
 use React\Promise\PromiseInterface;
-use Temporal\Client\WorkflowClientInterface;
-use Temporal\Client\WorkflowOptions;
+use Temporal\Client\WorkflowStubInterface;
 use Temporal\DataConverter\Type;
 use Temporal\Interceptor\WorkflowOutboundRequestInterceptor;
+use Temporal\Tests\Acceptance\App\Attribute\Stub;
 use Temporal\Tests\Acceptance\App\TestCase;
 use Temporal\Worker\Transport\Command\RequestInterface;
 use Temporal\Workflow;
@@ -19,23 +19,13 @@ use Temporal\Workflow\QueryMethod;
 use Temporal\Workflow\ReturnType;
 use Temporal\Workflow\WorkflowInterface;
 use Temporal\Workflow\WorkflowMethod;
-use Temporal\Tests\Acceptance\App\Runtime\Feature;
 
 final class SuppressedExceptionTest extends TestCase
 {
     #[Test]
     public function childWorkflowStuck(
-        WorkflowClientInterface $client,
-        Feature $feature,
+        #[Stub('Root_Suppressed_Exception_Workflow')] WorkflowStubInterface $stub,
     ) {
-        $stub = $client->newUntypedWorkflowStub(
-            'Root_Suppressed_Exception_Workflow',
-            WorkflowOptions::new()
-                ->withTaskQueue($feature->taskQueue)
-        );
-
-        $client->start($stub);
-
         $executedChildWorkflow = false;
         $deadline              = \microtime(true) + 5.0; // 5-second timeout
         do {
