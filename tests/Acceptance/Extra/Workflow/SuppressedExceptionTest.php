@@ -2,7 +2,8 @@
 
 declare(strict_types = 1);
 
-namespace Acceptance\Extra\Workflow;
+namespace Temporal\Tests\Acceptance\Extra\Workflow\SuppressedExceptionTest;
+
 
 use PHPUnit\Framework\Attributes\Test;
 use React\Promise\PromiseInterface;
@@ -27,7 +28,6 @@ final class SuppressedExceptionTest extends TestCase
         WorkflowClientInterface $client,
         Feature $feature,
     ) {
-
         $stub = $client->newUntypedWorkflowStub(
             'Root_Suppressed_Exception_Workflow',
             WorkflowOptions::new()
