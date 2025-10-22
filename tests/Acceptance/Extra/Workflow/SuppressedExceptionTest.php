@@ -7,35 +7,46 @@ namespace Temporal\Tests\Acceptance\Extra\Workflow\SuppressedExceptionTest;
 
 use PHPUnit\Framework\Attributes\Test;
 use React\Promise\PromiseInterface;
-use Temporal\Client\WorkflowStubInterface;
-use Temporal\DataConverter\Type;
+use Temporal\Client\WorkflowClientInterface;
+use Temporal\Client\WorkflowOptions;
 use Temporal\Interceptor\WorkflowOutboundRequestInterceptor;
-use Temporal\Tests\Acceptance\App\Attribute\Stub;
 use Temporal\Tests\Acceptance\App\TestCase;
 use Temporal\Worker\Transport\Command\RequestInterface;
 use Temporal\Workflow;
 use Temporal\Workflow\ChildWorkflowOptions;
 use Temporal\Workflow\QueryMethod;
-use Temporal\Workflow\ReturnType;
 use Temporal\Workflow\WorkflowInterface;
 use Temporal\Workflow\WorkflowMethod;
+use Temporal\Tests\Acceptance\App\Runtime\Feature;
 
 final class SuppressedExceptionTest extends TestCase
 {
     #[Test]
     public function childWorkflowStuck(
-        #[Stub('Root_Suppressed_Exception_Workflow')] WorkflowStubInterface $stub,
+        WorkflowClientInterface $client,
+        Feature $feature,
     ) {
+        $stub = $client->newUntypedWorkflowStub(
+            'Root_Suppressed_Exception_Workflow',
+            WorkflowOptions::new()
+                ->withTaskQueue($feature->taskQueue)
+        );
+
+        $client->start($stub);
+
         $executedChildWorkflow = false;
         $deadline              = \microtime(true) + 5.0; // 5-second timeout
         do {
-            $executedChildWorkflow = $stub->query('isExecutedChildWorkflow')->getValue(0);
+            try {
+                $executedChildWorkflow = $stub->query('isExecutedChildWorkflow')->getValue(0);
+            }catch (\Throwable $t){
+                dump($t);
+            }
 
             if ($executedChildWorkflow) {
                 break;
             }
         } while (\microtime(true) < $deadline);
-
 
         $this->assertTrue($executedChildWorkflow, 'Child_Suppressed_Exception_Workflow is stuck');
     }
@@ -50,7 +61,6 @@ final class RootSuppressedExceptionWorkflow
     }
 
     #[WorkflowMethod('Root_Suppressed_Exception_Workflow')]
-    #[ReturnType(Type::TYPE_VOID)]
     public function start(): \Generator
     {
         $childWorkflow = Workflow::newChildWorkflowStub(
