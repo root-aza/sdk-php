@@ -30,7 +30,13 @@ final class SuppressedExceptionTest extends TestCase
         $executedChildWorkflow = false;
         $deadline              = \microtime(true) + 5.0; // 5-second timeout
         do {
-            $executedChildWorkflow = $stub->query('isExecutedChildWorkflow')->getValue(0);
+            try {
+                $executedChildWorkflow = $stub->query('isExecutedChildWorkflow')->getValue(0);
+            }catch (\Throwable $e){
+                dump($e);
+
+                dump($stub);
+            }
 
             if ($executedChildWorkflow) {
                 break;
