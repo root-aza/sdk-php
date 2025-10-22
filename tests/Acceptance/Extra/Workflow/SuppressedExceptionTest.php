@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Acceptance\Extra\Workflow;
 
+use PHPUnit\Framework\Attributes\Test;
 use React\Promise\PromiseInterface;
 use Temporal\Client\WorkflowStubInterface;
 use Temporal\DataConverter\Type;
@@ -20,6 +21,7 @@ use Temporal\Workflow\WorkflowMethod;
 
 final class SuppressedExceptionTest extends TestCase
 {
+    #[Test]
     public function childWorkflow(
         #[Stub('Root_Suppressed_Exception_Workflow')] WorkflowStubInterface $stub,
     ) {
