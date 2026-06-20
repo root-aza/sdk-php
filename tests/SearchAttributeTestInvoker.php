@@ -20,8 +20,9 @@ final class SearchAttributeTestInvoker
             new AddSearchAttributesRequest(
                 [
                     'search_attributes' => [
-                        'attr1' => 2, // Keyword
-                        'attr2' => 5, // Bool
+                        'attr1'               => 2, // Keyword
+                        'attr2'               => 5, // Bool,
+                        'SuppressedException' => 5,
                     ]
                 ]
             )
